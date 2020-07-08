@@ -1,0 +1,78 @@
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+import time
+from pywinauto.keyboard import send_keys
+import os
+%cd E:\TorrentSearch\ChromeDriver
+
+#Name of film and number of links
+name_film = str(input("Search:                                  "))
+number_of_links = str(input("Number of links:                         "))
+driver = webdriver.Chrome()
+#search in 1377x torrent site
+driver.get("https://www.1377x.to/popular-movies")
+assert "1337" in driver.title
+elem = driver.find_element_by_name("search")
+elem.clear()
+elem.send_keys(name_film)
+elem.send_keys(Keys.RETURN)
+assert "No results found." not in driver.page_source
+time.sleep(0.1)
+#close pop-up and return to main site
+window_name = driver.window_handles[-1]
+driver.switch_to.window(window_name=window_name)
+driver.close()
+driver.switch_to.window(driver.window_handles[0])
+#Show name, seeders, leechers and size of torrents
+for i in range(int(number_of_links)):
+    var_number=str(i+1)
+    path_size = '/html/body/main/div/div/div/div[2]/div[1]/table/tbody/tr[' + var_number + ']/td[5]'
+    path_seeders ='/html/body/main/div/div/div/div[2]/div[1]/table/tbody/tr[' + var_number + ']/td[2]'
+    path_leechers ='/html/body/main/div/div/div/div[2]/div[1]/table/tbody/tr[' + var_number + ']/td[3]'
+    link_name = driver.find_element_by_xpath('/html/body/main/div/div/div/div[2]/div[1]/table/tbody/tr[1]/td[1]/a[2]').text
+    size = driver.find_element_by_xpath(path_size).text
+    seeders = driver.find_element_by_xpath(path_seeders).text
+    leechers = driver.find_element_by_xpath(path_leechers).text
+    print("No.",i+1,"Link name :",link_name," Size: ",size,"Seeders: ",seeders,"leechers: ",leechers)
+time.sleep(1)
+send_keys('%{TAB}')
+time.sleep(3)
+send_keys('%{TAB}')
+
+if int(number_of_links) == 1:
+    print("Good Choice")
+    link_path='/html/body/main/div/div/div/div[2]/div[1]/table/tbody/tr[1]/td[3]'
+    link = driver.find_element_by_xpath('/html/body/main/div/div/div/div[2]/div[1]/table/tbody/tr[1]/td[1]/a[2]')
+    link.click()
+else:
+    send_keys('%{TAB}')
+    number_link = str(input("Which link?                                  "))
+    send_keys('%{TAB}')
+    link_path='/html/body/main/div/div/div/div[2]/div[1]/table/tbody/tr[' + str(number_link) + ']/td[3]'
+    send_keys('%{TAB}')
+    link = driver.find_element_by_xpath('/html/body/main/div/div/div/div[2]/div[1]/table/tbody/tr[1]/td[1]/a[2]')
+    link.click()
+
+#click magnet uri
+
+driver.switch_to.window(driver.window_handles[0])
+url_1 = driver.find_element_by_xpath('/html/body/main/div/div/div/div[2]/div[1]/ul[1]/li[1]/a')
+url_1.click()
+driver.switch_to.window(driver.window_handles[0])
+send_keys('{LEFT}')
+send_keys('{ENTER}')
+time.sleep(1)
+
+#copy magnet uri
+def addToClipBoard(text):
+    command = 'echo ' + text.strip() + '| clip'
+    os.system(command)
+
+path_to_movie = 'E:\\'+ link_name
+addToClipBoard(path_to_movie)
+
+time.sleep(0.5)
+#paste name of torrent as folder name
+send_keys('{DEL}')
+send_keys('^v')
